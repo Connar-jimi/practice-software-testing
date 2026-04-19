@@ -28,7 +28,6 @@ jobs:
     - name: 启动 Docker（MariaDB 数据库）
       run: docker compose up -d
 
-
     - name: 等待数据库启动
       run: sleep 15
 
