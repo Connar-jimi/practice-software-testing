@@ -4,9 +4,8 @@ on:
   push:
     branches: [ main ]
   schedule:
-    # 每天北京时间早上9点自动运行（UTC时间 01:00）
     - cron: '0 1 * * *'
-  workflow_dispatch:
+  workflow_dispatch:     # ← 手动触发关键配置
 
 jobs:
   test:
@@ -42,7 +41,6 @@ jobs:
       with:
         allure_results: allure-results
         allure_report: allure-report
-        allure_config: config/allure.yml
 
     - name: 上传 Allure 报告
       uses: actions/upload-artifact@v4
