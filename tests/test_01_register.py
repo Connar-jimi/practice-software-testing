@@ -1,4 +1,5 @@
 import pytest
+import time
 from api.base_api import BaseApi
 
 
@@ -8,7 +9,7 @@ class TestRegister:
     @pytest.mark.parametrize("payload, expected_status, case_name", [
         # ==================== 正向测试 ====================
         # 用一个全新的、从未注册过的邮箱
-        ({"email": "newuser999@q.com", "password": "Welcome123111!", "first_name": "New", "last_name": "User"},
+        ({"email": "newuser{int(time.time())}@qq.com", "password": "Welcome123111!", "first_name": "New", "last_name": "User"},
          201, "register_001_正常注册成功"),
 
         # ==================== 反向测试 ====================
