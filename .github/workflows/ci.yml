@@ -28,8 +28,14 @@ jobs:
     - name: 启动 Docker（MariaDB 数据库）
       run: docker compose up -d
 
+
     - name: 等待数据库启动
       run: sleep 15
+
+    - name: 执行数据库迁移（创建表）
+      run: |
+        docker compose exec -T laravel-api php artisan migrate --force
+
 
     - name: 运行所有接口自动化测试
       run: |
