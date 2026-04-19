@@ -6,6 +6,7 @@ on:
   schedule:
     # 每天北京时间早上9点自动运行（UTC时间 01:00）
     - cron: '0 1 * * *'
+  workflow_dispatch:
 
 jobs:
   test:
