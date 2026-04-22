@@ -28,7 +28,6 @@ jobs:
     - name: 启动 Docker（Laravel + MariaDB）
       run: docker compose up -d
 
-    # ✅ 替换 sleep（关键优化）
     - name: 等待数据库就绪
       run: |
         until docker compose exec -T mariadb mysqladmin ping -h"127.0.0.1" --silent; do
@@ -36,7 +35,6 @@ jobs:
           sleep 3
         done
 
-    # ✅ 只用 install（企业标准）
     - name: 安装 Laravel 依赖
       run: |
         docker compose exec -T laravel-api composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
@@ -46,10 +44,9 @@ jobs:
         docker compose exec -T laravel-api php artisan migrate:fresh --force
         docker compose exec -T laravel-api php artisan db:seed --force
 
-    # ✅ 再加一层保险（避免你之前那个 invoices 报错）
-    - name: 确认关键表存在
+    - name: 确认关键表存在（调试用，可后续删除）
       run: |
-        docker compose exec -T mariadb mysql -uuser -proot toolshop -e "SHOW TABLES;"
+        docker compose exec -T mariadb mysql -uroot -proot toolshop -e "SHOW TABLES;"
 
     - name: 运行接口自动化测试
       run: |
