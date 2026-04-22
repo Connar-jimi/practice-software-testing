@@ -4,8 +4,8 @@ on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 1 * * *'
-  workflow_dispatch:
+    - cron: '0 1 * * *'        # 每天北京时间 9:00 自动运行
+  workflow_dispatch:           # 允许手动触发（最重要！）
 
 jobs:
   test:
@@ -20,27 +20,27 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: 安装依赖
+    - name: 安装 Python 依赖
       run: |
         pip install -r requirements.txt
         pip install pytest allure-pytest requests certifi pymysql
 
-    - name: 启动 Docker（MariaDB 数据库）
+    - name: 启动 Docker 服务（MariaDB + Laravel）
       run: docker compose up -d
 
     - name: 等待数据库启动
-      run: sleep 35
+      run: sleep 40
 
-    - name: 安装 Laravel 依赖（composer install）
+    - name: 安装 Laravel 依赖
       run: |
-        docker compose exec -T laravel-api composer install --no-interaction --prefer-dist --optimize-autoloader
+        docker compose exec -T laravel-api composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
 
-    - name: 执行数据库迁移（清空并重新创建所有表）
+    - name: 执行数据库迁移（清空重建）
       run: |
         docker compose exec -T laravel-api php artisan migrate:fresh --force
         docker compose exec -T laravel-api php artisan db:seed --force
 
-    - name: 运行所有接口自动化测试
+    - name: 运行接口自动化测试
       run: |
         python -m pytest tests/ -v --alluredir=allure-results
 
