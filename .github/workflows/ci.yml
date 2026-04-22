@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 1 * * *'   # 每天 UTC 1:00（北京时间 9:00）
+    - cron: '0 1 * * *'
   workflow_dispatch:
 
 jobs:
@@ -35,9 +35,16 @@ jobs:
           sleep 3
         done
 
+    # ✅ 关键修复：创建 vendor + 修权限
+    - name: 初始化 Laravel 目录权限
+      run: |
+        docker compose exec -T -u root laravel-api mkdir -p /var/www/vendor
+        docker compose exec -T -u root laravel-api chmod -R 777 /var/www
+
+    # ✅ 关键修复：用 root 执行 composer
     - name: 安装 Laravel 依赖
       run: |
-        docker compose exec -T laravel-api composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
+        docker compose exec -T -u root laravel-api composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
 
     - name: 执行数据库迁移（重建表 + 初始化数据）
       run: |
