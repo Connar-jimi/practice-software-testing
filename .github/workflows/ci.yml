@@ -4,8 +4,8 @@ on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 1 * * *'        # 每天北京时间 9:00 自动运行
-  workflow_dispatch:           # 允许手动触发（最重要！）
+    - cron: '0 1 * * *'   # 每天 UTC 1:00（北京时间 9:00）
+  workflow_dispatch:
 
 jobs:
   test:
@@ -25,24 +25,31 @@ jobs:
         pip install -r requirements.txt
         pip install pytest allure-pytest requests certifi pymysql
 
-    - name: 启动 Docker 服务（MariaDB + Laravel）
+    - name: 启动 Docker（Laravel + MariaDB）
       run: docker compose up -d
 
-    - name: 等待数据库启动
-      run: sleep 40
-
-    - name: 修复 l5-swagger 版本冲突（关键步骤）
+    # ✅ 替换 sleep（关键优化）
+    - name: 等待数据库就绪
       run: |
-        docker compose exec -T laravel-api composer update darkaonline/l5-swagger --no-interaction --prefer-dist --with-all-dependencies
+        until docker compose exec -T mariadb mysqladmin ping -h"127.0.0.1" --silent; do
+          echo "waiting for mariadb..."
+          sleep 3
+        done
 
+    # ✅ 只用 install（企业标准）
     - name: 安装 Laravel 依赖
       run: |
         docker compose exec -T laravel-api composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
 
-    - name: 执行数据库迁移（清空重建）
+    - name: 执行数据库迁移（重建表 + 初始化数据）
       run: |
         docker compose exec -T laravel-api php artisan migrate:fresh --force
         docker compose exec -T laravel-api php artisan db:seed --force
+
+    # ✅ 再加一层保险（避免你之前那个 invoices 报错）
+    - name: 确认关键表存在
+      run: |
+        docker compose exec -T mariadb mysql -uuser -proot toolshop -e "SHOW TABLES;"
 
     - name: 运行接口自动化测试
       run: |
