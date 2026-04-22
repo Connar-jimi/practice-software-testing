@@ -31,6 +31,10 @@ jobs:
     - name: 等待数据库启动
       run: sleep 40
 
+    - name: 修复 l5-swagger 版本冲突
+      run: |
+        docker compose exec -T laravel-api composer update darkaonline/l5-swagger --no-interaction --prefer-dist --with-all-dependencies
+
     - name: 安装 Laravel 依赖
       run: |
         docker compose exec -T laravel-api composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
